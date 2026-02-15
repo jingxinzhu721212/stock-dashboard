@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -73,6 +74,7 @@
             width: 7px; height: 7px; border-radius: 50%;
             background: var(--accent-green); animation: pulse 2s infinite;
         }
+        .status-dot.offline { background: var(--accent-yellow); }
         @keyframes pulse {
             0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
             50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
@@ -113,7 +115,6 @@
             transition: transform 0.1s;
         }
         .btn-add:active { transform: scale(0.95); }
-        /* 历史记录标签 */
         .history-section { display: none; margin-top: 10px; }
         .history-section.show { display: block; }
         .history-label {
@@ -136,17 +137,11 @@
             cursor: pointer; transition: all 0.15s; user-select: none;
         }
         .history-chip:active { transform: scale(0.95); }
-        .history-chip.in-list {
-            background: var(--accent-green-dim); border-color: var(--accent-green);
-            color: var(--accent-green); opacity: 0.5; cursor: default;
-        }
         .history-chip .chip-x {
             display: inline-flex; align-items: center; justify-content: center;
             width: 16px; height: 16px; border-radius: 50%;
             font-size: 11px; color: var(--text-dim); margin-left: 2px;
         }
-        .history-chip .chip-x:hover { color: var(--accent-red); }
-        /* 按钮 */
         .btn-primary {
             width: 100%; padding: 15px;
             background: linear-gradient(135deg, var(--accent-green), #16a34a);
@@ -223,6 +218,7 @@
         .toast-success { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid var(--accent-green); }
         .toast-error { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid var(--accent-red); }
         .toast-warning { background: var(--accent-yellow-dim); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); }
+        .toast-info { background: var(--accent-blue-dim); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
         .modal-overlay {
             display: none; position: fixed; inset: 0;
             background: rgba(0,0,0,0.7); z-index: 200;
@@ -247,394 +243,454 @@
         .needs-sync { display: none; align-items: center; gap: 6px; padding: 8px 12px; background: var(--accent-yellow-dim); border: 1px solid rgba(234,179,8,0.3); border-radius: 8px; margin-bottom: 12px; font-size: 12px; color: var(--accent-yellow); }
         .needs-sync.show { display: flex; }
         .version-info { text-align: center; padding: 16px 0; font-size: 11px; color: #1e2d45; font-family: 'JetBrains Mono', monospace; }
+        .sync-status {
+            font-size: 11px; color: var(--text-dim); text-align: center;
+            font-family: 'JetBrains Mono', monospace; margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
     <div class="page-container">
         <div class="header">
             <h1>🚀 AI 指挥舱</h1>
-            <div class="subtitle">STOCK COMMAND CENTER v2.2</div>
+            <div class="subtitle">STOCK COMMAND CENTER v2.3</div>
         </div>
         <div class="status-bar">
-            <span class="status-dot"></span>
-            <span>系统在线 · GitHub Actions</span>
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">正在连接...</span>
         </div>
 
-        <!-- 页面1: 指挥中心 -->
-        <div class="page active" id="page-command">
-            <div class="card">
-                <div class="card-title">➕ 添加监控</div>
-                <div class="input-group">
-                    <label>输入新股票代码（多个用逗号隔开）</label>
-                    <div class="add-row">
-                        <input type="text" id="symbolInput" placeholder="AAPL, TSLA" autocapitalize="characters">
-                        <button class="btn-add" onclick="addSymbols()">添加</button>
-                    </div>
-                    <!-- 历史记录 -->
-                    <div class="history-section" id="historySection">
-                        <div class="history-label">
-                            <span>📌 曾用代码（点击快速添加）</span>
-                            <button class="history-clear" onclick="clearHistory()">清除记录</button>
-                        </div>
-                        <div class="history-chips" id="historyChips"></div>
-                    </div>
+```
+    <!-- 页面1: 指挥中心 -->
+    <div class="page active" id="page-command">
+        <div class="card">
+            <div class="card-title">➕ 添加监控</div>
+            <div class="input-group">
+                <label>输入新股票代码（多个用逗号隔开）</label>
+                <div class="add-row">
+                    <input type="text" id="symbolInput" placeholder="AAPL, TSLA" autocapitalize="characters">
+                    <button class="btn-add" onclick="addSymbols()">添加</button>
                 </div>
-                <div class="input-group">
-                    <label>执行策略</label>
-                    <select id="strategySelect">
-                        <option value="triple">三重信号检测（全部）</option>
-                        <option value="left">🟡 左侧: 增量止跌形态</option>
-                        <option value="right">🟢 右侧: 上穿50日线</option>
-                        <option value="br">🔵 右侧: 底部反转(BR)</option>
-                    </select>
-                </div>
-                <div class="needs-sync" id="needsSync">⚠️ 列表已变更，请同步到云端</div>
-                <button class="btn-primary" id="syncBtn" onclick="syncToCloud()">⚡ 同步到云端</button>
-            </div>
-
-            <div class="card">
-                <div class="card-title">📋 当前监控</div>
-                <div class="monitor-count" id="monitorCount"></div>
-                <ul class="monitor-list" id="monitorList">
-                    <li class="monitor-empty">尚未添加股票</li>
-                </ul>
-                <div class="signal-legend">
-                    <span class="legend-tag tag-left">🟡 止跌形态</span>
-                    <span class="legend-tag tag-right">🟢 穿50日线</span>
-                    <span class="legend-tag tag-br">🔵 底部反转</span>
+                <div class="history-section" id="historySection">
+                    <div class="history-label">
+                        <span>📌 曾用代码（点击快速添加）</span>
+                        <button class="history-clear" onclick="clearHistory()">清除记录</button>
+                    </div>
+                    <div class="history-chips" id="historyChips"></div>
                 </div>
             </div>
-            <div class="version-info">v2.2 · 三重信号检测</div>
+            <div class="input-group">
+                <label>执行策略</label>
+                <select id="strategySelect">
+                    <option value="triple">三重信号检测（全部）</option>
+                    <option value="left">🟡 左侧: 增量止跌形态</option>
+                    <option value="right">🟢 右侧: 上穿50日线</option>
+                    <option value="br">🔵 右侧: 底部反转(BR)</option>
+                </select>
+            </div>
+            <div class="needs-sync" id="needsSync">⚠️ 列表已变更，请同步到云端</div>
+            <button class="btn-primary" id="syncBtn" onclick="syncToCloud()">⚡ 同步到云端</button>
         </div>
 
-        <!-- 页面2-4: 预留 -->
-        <div class="page" id="page-analyze">
-            <div class="placeholder">
-                <div class="placeholder-icon">🔬</div>
-                <div class="placeholder-title">股票分析器</div>
-                <div class="placeholder-desc">输入股票代码，自动进行多维度分析<br>基本面 · 技术面 · 资金面<br><br>🚧 开发中 · 即将上线</div>
+        <div class="card">
+            <div class="card-title">📋 当前监控</div>
+            <div class="sync-status" id="syncStatus"></div>
+            <div class="monitor-count" id="monitorCount"></div>
+            <ul class="monitor-list" id="monitorList">
+                <li class="monitor-empty">正在从云端加载...</li>
+            </ul>
+            <div class="signal-legend">
+                <span class="legend-tag tag-left">🟡 止跌形态</span>
+                <span class="legend-tag tag-right">🟢 穿50日线</span>
+                <span class="legend-tag tag-br">🔵 底部反转</span>
             </div>
         </div>
-        <div class="page" id="page-screener">
-            <div class="placeholder">
-                <div class="placeholder-icon">🎯</div>
-                <div class="placeholder-title">智能筛选器</div>
-                <div class="placeholder-desc">根据策略条件自动筛选最适合的股票<br>筛选器 + 策略融合 · 一键式操作<br><br>🚧 开发中 · 即将上线</div>
-            </div>
-        </div>
-        <div class="page" id="page-signals">
-            <div class="placeholder">
-                <div class="placeholder-icon">📊</div>
-                <div class="placeholder-title">信号记录</div>
-                <div class="placeholder-desc">查看历史信号 · 胜率统计 · 回测结果<br>记录每一次交易决策<br><br>🚧 开发中 · 即将上线</div>
-            </div>
-        </div>
+        <div class="version-info">v2.3 · 三重信号检测</div>
+    </div>
 
-        <!-- 页面5: 设置 -->
-        <div class="page" id="page-settings">
-            <div class="card">
-                <div class="card-title">🔑 GitHub 连接</div>
-                <div class="settings-section">
-                    <div class="input-group">
-                        <label>Personal Access Token</label>
-                        <div class="token-row">
-                            <input type="text" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx">
-                            <button class="btn-small" onclick="saveToken()">保存</button>
-                        </div>
-                        <div class="help-text">
-                            <a href="https://github.com/settings/tokens/new" target="_blank">点此创建 Token</a> · 勾选 repo + workflow 权限
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>仓库地址（策略运行的仓库）</label>
-                        <input type="text" id="repoInput" value="jingxinzhu721212/NFLX_Monitor">
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">📱 通知设置</div>
-                <div class="settings-section">
-                    <div class="input-group">
-                        <label>Discord Webhook URL</label>
-                        <input type="text" id="discordInput" placeholder="https://discord.com/api/webhooks/...">
-                        <div class="help-text">当前通知通过 Discord 推送</div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">⚙️ 策略参数</div>
-                <div class="settings-section">
-                    <div class="input-group"><label>增量止跌 — 回看天数</label><input type="text" id="paramLookback" value="20"></div>
-                    <div class="input-group"><label>增量止跌 — 最低跌幅 (%)</label><input type="text" id="paramDropPct" value="10"></div>
-                    <div class="input-group"><label>增量止跌 — 放量倍数</label><input type="text" id="paramVolRatio" value="1.5"></div>
-                    <div class="help-text">修改参数后需点「同步到云端」才会生效</div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">ℹ️ 关于</div>
-                <div class="help-text" style="line-height: 2;">
-                    AI 指挥舱 v2.2<br>三重信号检测系统<br>
-                    🟡 左侧: 增量止跌形态<br>🟢 右侧: 股价上穿50日均线<br>🔵 右侧: 底部反转(BR)<br><br>
-                    Powered by GitHub Actions + Discord
-                </div>
-            </div>
+    <!-- 页面2-4: 预留 -->
+    <div class="page" id="page-analyze">
+        <div class="placeholder">
+            <div class="placeholder-icon">🔬</div>
+            <div class="placeholder-title">股票分析器</div>
+            <div class="placeholder-desc">输入股票代码，自动进行多维度分析<br>基本面 · 技术面 · 资金面<br><br>🚧 开发中 · 即将上线</div>
+        </div>
+    </div>
+    <div class="page" id="page-screener">
+        <div class="placeholder">
+            <div class="placeholder-icon">🎯</div>
+            <div class="placeholder-title">智能筛选器</div>
+            <div class="placeholder-desc">根据策略条件自动筛选最适合的股票<br>筛选器 + 策略融合 · 一键式操作<br><br>🚧 开发中 · 即将上线</div>
+        </div>
+    </div>
+    <div class="page" id="page-signals">
+        <div class="placeholder">
+            <div class="placeholder-icon">📊</div>
+            <div class="placeholder-title">信号记录</div>
+            <div class="placeholder-desc">查看历史信号 · 胜率统计 · 回测结果<br>记录每一次交易决策<br><br>🚧 开发中 · 即将上线</div>
         </div>
     </div>
 
-    <nav class="bottom-nav">
-        <div class="nav-inner">
-            <button class="nav-item active" onclick="switchPage('command', this)"><span class="nav-icon">📡</span><span class="nav-label">指挥</span></button>
-            <button class="nav-item coming-soon" onclick="switchPage('analyze', this)"><span class="nav-icon">🔬</span><span class="nav-label">分析</span></button>
-            <button class="nav-item coming-soon" onclick="switchPage('screener', this)"><span class="nav-icon">🎯</span><span class="nav-label">筛选</span></button>
-            <button class="nav-item coming-soon" onclick="switchPage('signals', this)"><span class="nav-icon">📊</span><span class="nav-label">信号</span></button>
-            <button class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-label">设置</span></button>
+    <!-- 页面5: 设置 -->
+    <div class="page" id="page-settings">
+        <div class="card">
+            <div class="card-title">🔑 GitHub 连接</div>
+            <div class="settings-section">
+                <div class="input-group">
+                    <label>Personal Access Token</label>
+                    <div class="token-row">
+                        <input type="text" id="tokenInput" placeholder="ghp_xxxxxxxxxxxx">
+                        <button class="btn-small" onclick="saveToken()">保存</button>
+                    </div>
+                    <div class="help-text">
+                        <a href="https://github.com/settings/tokens/new" target="_blank">点此创建 Token</a> · 勾选 repo + workflow 权限
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>仓库地址（策略运行的仓库）</label>
+                    <input type="text" id="repoInput" value="jingxinzhu721212/NFLX_Monitor">
+                </div>
+            </div>
         </div>
-    </nav>
-
-    <div class="toast" id="toast"></div>
-
-    <div class="modal-overlay" id="deleteModal">
-        <div class="modal-box">
-            <div class="modal-title">确认删除</div>
-            <div class="modal-desc">确定要移除 <span class="modal-symbol" id="deleteTarget"></span> 吗？<br>移除后需同步到云端才会生效</div>
-            <div class="modal-btns">
-                <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">取消</button>
-                <button class="modal-btn modal-btn-danger" onclick="confirmDelete()">删除</button>
+        <div class="card">
+            <div class="card-title">📱 通知设置</div>
+            <div class="settings-section">
+                <div class="input-group">
+                    <label>Discord Webhook URL</label>
+                    <input type="text" id="discordInput" placeholder="https://discord.com/api/webhooks/...">
+                    <div class="help-text">当前通知通过 Discord 推送</div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">⚙️ 策略参数</div>
+            <div class="settings-section">
+                <div class="input-group"><label>增量止跌 — 回看天数</label><input type="text" id="paramLookback" value="20"></div>
+                <div class="input-group"><label>增量止跌 — 最低跌幅 (%)</label><input type="text" id="paramDropPct" value="10"></div>
+                <div class="input-group"><label>增量止跌 — 放量倍数</label><input type="text" id="paramVolRatio" value="1.5"></div>
+                <div class="help-text">修改参数后需点「同步到云端」才会生效</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">ℹ️ 关于</div>
+            <div class="help-text" style="line-height: 2;">
+                AI 指挥舱 v2.3<br>三重信号检测系统<br>
+                🟡 左侧: 增量止跌形态<br>🟢 右侧: 股价上穿50日均线<br>🔵 右侧: 底部反转(BR)<br><br>
+                ☁️ 数据存储在 GitHub，任何设备打开都能同步<br><br>
+                Powered by GitHub Actions + Discord
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // ===== 监控列表（当前正在监控的） =====
-        function getSymbols() {
-            try { return JSON.parse(localStorage.getItem('monitor_symbols') || '[]'); }
-            catch { return []; }
+<nav class="bottom-nav">
+    <div class="nav-inner">
+        <button class="nav-item active" onclick="switchPage('command', this)"><span class="nav-icon">📡</span><span class="nav-label">指挥</span></button>
+        <button class="nav-item coming-soon" onclick="switchPage('analyze', this)"><span class="nav-icon">🔬</span><span class="nav-label">分析</span></button>
+        <button class="nav-item coming-soon" onclick="switchPage('screener', this)"><span class="nav-icon">🎯</span><span class="nav-label">筛选</span></button>
+        <button class="nav-item coming-soon" onclick="switchPage('signals', this)"><span class="nav-icon">📊</span><span class="nav-label">信号</span></button>
+        <button class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-label">设置</span></button>
+    </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="deleteModal">
+    <div class="modal-box">
+        <div class="modal-title">确认删除</div>
+        <div class="modal-desc">确定要移除 <span class="modal-symbol" id="deleteTarget"></span> 吗？<br>移除后需同步到云端才会生效</div>
+        <div class="modal-btns">
+            <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">取消</button>
+            <button class="modal-btn modal-btn-danger" onclick="confirmDelete()">删除</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== 监控列表 =====
+    function getSymbols() {
+        try { return JSON.parse(localStorage.getItem('monitor_symbols') || '[]'); }
+        catch { return []; }
+    }
+    function saveSymbols(symbols) {
+        localStorage.setItem('monitor_symbols', JSON.stringify(symbols));
+        renderMonitorList();
+        renderHistory();
+    }
+
+    // ===== 历史记录 =====
+    function getHistory() {
+        try { return JSON.parse(localStorage.getItem('symbol_history') || '[]'); }
+        catch { return []; }
+    }
+    function addToHistory(symbols) {
+        var history = getHistory();
+        symbols.forEach(function(s) {
+            if (s && history.indexOf(s) === -1) { history.unshift(s); }
+        });
+        history = history.slice(0, 50);
+        localStorage.setItem('symbol_history', JSON.stringify(history));
+        renderHistory();
+    }
+    function removeFromHistory(symbol) {
+        var history = getHistory().filter(function(s) { return s !== symbol; });
+        localStorage.setItem('symbol_history', JSON.stringify(history));
+        renderHistory();
+    }
+    function clearHistory() {
+        localStorage.removeItem('symbol_history');
+        renderHistory();
+    }
+    function renderHistory() {
+        var history = getHistory();
+        var section = document.getElementById('historySection');
+        var container = document.getElementById('historyChips');
+        var currentList = getSymbols();
+        var available = history.filter(function(s) { return currentList.indexOf(s) === -1; });
+        if (available.length === 0) { section.classList.remove('show'); return; }
+        section.classList.add('show');
+        container.innerHTML = available.map(function(s) {
+            return '<span class="history-chip" onclick="quickAdd(\'' + s + '\')">' +
+                s +
+                '<span class="chip-x" onclick="event.stopPropagation(); removeFromHistory(\'' + s + '\')">✕</span>' +
+            '</span>';
+        }).join('');
+    }
+    function quickAdd(symbol) {
+        var current = getSymbols();
+        if (current.indexOf(symbol) !== -1) return;
+        current.push(symbol);
+        saveSymbols(current);
+        markDirty();
+        showToast('✅ 已添加 ' + symbol, 'success');
+    }
+
+    // ===== 页面切换 =====
+    function switchPage(pageId, navEl) {
+        document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+        document.getElementById('page-' + pageId).classList.add('active');
+        navEl.classList.add('active');
+    }
+
+    // ===== Token & Repo =====
+    function getToken() { return localStorage.getItem('gh_token') || ''; }
+    function getRepo() { return document.getElementById('repoInput').value.trim(); }
+    function saveToken() {
+        var token = document.getElementById('tokenInput').value.trim();
+        if (token) {
+            localStorage.setItem('gh_token', token);
+            showToast('Token 已保存，正在同步...', 'success');
+            fetchFromCloud(); // 保存 token 后立即拉取
         }
-        function saveSymbols(symbols) {
-            localStorage.setItem('monitor_symbols', JSON.stringify(symbols));
+    }
+
+    // ===== 同步提醒 =====
+    function markDirty() { document.getElementById('needsSync').classList.add('show'); }
+    function markClean() { document.getElementById('needsSync').classList.remove('show'); }
+
+    // ===== 从云端拉取 config.py =====
+    async function fetchFromCloud() {
+        var token = getToken();
+        var repo = getRepo();
+        var dot = document.getElementById('statusDot');
+        var text = document.getElementById('statusText');
+        var syncStatus = document.getElementById('syncStatus');
+
+        if (!token) {
+            dot.classList.add('offline');
+            text.textContent = '未连接 · 请先设置 Token';
+            syncStatus.textContent = '';
             renderMonitorList();
-            renderHistory();
+            return;
         }
 
-        // ===== 历史记录（所有曾经输入过的，包括已删除的） =====
-        function getHistory() {
-            try { return JSON.parse(localStorage.getItem('symbol_history') || '[]'); }
-            catch { return []; }
-        }
-        function addToHistory(symbols) {
-            var history = getHistory();
-            symbols.forEach(function(s) {
-                if (s && history.indexOf(s) === -1) { history.unshift(s); }
-            });
-            history = history.slice(0, 50);
-            localStorage.setItem('symbol_history', JSON.stringify(history));
-            renderHistory();
-        }
-        function removeFromHistory(symbol) {
-            var history = getHistory().filter(function(s) { return s !== symbol; });
-            localStorage.setItem('symbol_history', JSON.stringify(history));
-            renderHistory();
-        }
-        function clearHistory() {
-            localStorage.removeItem('symbol_history');
-            renderHistory();
-        }
-
-        function renderHistory() {
-            var history = getHistory();
-            var section = document.getElementById('historySection');
-            var container = document.getElementById('historyChips');
-            var currentList = getSymbols();
-
-            // 只显示不在当前监控列表里的历史股票
-            var available = history.filter(function(s) { return currentList.indexOf(s) === -1; });
-
-            if (available.length === 0) {
-                section.classList.remove('show');
-                return;
-            }
-
-            section.classList.add('show');
-            container.innerHTML = available.map(function(s) {
-                return '<span class="history-chip" onclick="quickAdd(\'' + s + '\')">' +
-                    s +
-                    '<span class="chip-x" onclick="event.stopPropagation(); removeFromHistory(\'' + s + '\')">✕</span>' +
-                '</span>';
-            }).join('');
-        }
-
-        // 点击历史标签 → 直接添加到监控列表
-        function quickAdd(symbol) {
-            var current = getSymbols();
-            if (current.indexOf(symbol) !== -1) return;
-            current.push(symbol);
-            saveSymbols(current);
-            markDirty();
-            showToast('✅ 已添加 ' + symbol, 'success');
-        }
-
-        // ===== 页面切换 =====
-        function switchPage(pageId, navEl) {
-            document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-            document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
-            document.getElementById('page-' + pageId).classList.add('active');
-            navEl.classList.add('active');
-        }
-
-        // ===== Token =====
-        function getToken() { return localStorage.getItem('gh_token') || ''; }
-        function getRepo() { return document.getElementById('repoInput').value.trim(); }
-        function saveToken() {
-            var token = document.getElementById('tokenInput').value.trim();
-            if (token) { localStorage.setItem('gh_token', token); showToast('Token 已保存', 'success'); }
-        }
-
-        // ===== 同步提醒 =====
-        function markDirty() { document.getElementById('needsSync').classList.add('show'); }
-        function markClean() { document.getElementById('needsSync').classList.remove('show'); }
-
-        // ===== 添加股票（只添加，不覆盖） =====
-        function addSymbols() {
-            var input = document.getElementById('symbolInput');
-            var newStr = input.value.trim().toUpperCase();
-            if (!newStr) { showToast('请输入股票代码', 'error'); return; }
-
-            var newSymbols = newStr.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return /^[A-Z]{1,5}$/.test(s); });
-            if (newSymbols.length === 0) { showToast('请输入有效的股票代码', 'error'); return; }
-
-            var current = getSymbols();
-            var addedCount = 0;
-            newSymbols.forEach(function(s) {
-                if (current.indexOf(s) === -1) { current.push(s); addedCount++; }
+        try {
+            var res = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
+                headers: { 'Authorization': 'token ' + token }
             });
 
-            if (addedCount === 0) { showToast('这些股票已在监控列表中', 'warning'); return; }
+            if (!res.ok) throw new Error('无法读取');
 
-            saveSymbols(current);
-            addToHistory(newSymbols);
-            input.value = '';
-            markDirty();
-            showToast('✅ 已添加 ' + addedCount + ' 只股票', 'success');
-        }
+            var data = await res.json();
+            var content = atob(data.content);
 
-        // ===== 删除股票 =====
-        var pendingDeleteSymbol = null;
-        function requestDelete(symbol) {
-            pendingDeleteSymbol = symbol;
-            document.getElementById('deleteTarget').textContent = symbol;
-            document.getElementById('deleteModal').classList.add('show');
-        }
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.remove('show');
-            pendingDeleteSymbol = null;
-        }
-        function confirmDelete() {
-            if (!pendingDeleteSymbol) return;
-            var removed = pendingDeleteSymbol;
-            var current = getSymbols().filter(function(s) { return s !== removed; });
-            saveSymbols(current);
-            // 删除的股票会自动出现在历史记录里，方便以后重新添加
-            addToHistory([removed]);
-            closeDeleteModal();
-            markDirty();
-            showToast('🗑️ 已移除 ' + removed, 'success');
-        }
+            // 解析 SYMBOLS = ["NFLX", "UNH", ...]
+            var match = content.match(/SYMBOLS\s*=\s*\[([^\]]*)\]/);
+            if (match) {
+                var symbolStr = match[1];
+                var symbols = [];
+                var re = /["']([^"']+)["']/g;
+                var m;
+                while ((m = re.exec(symbolStr)) !== null) {
+                    symbols.push(m[1].trim().toUpperCase());
+                }
 
-        // ===== 渲染监控列表 =====
-        function renderMonitorList() {
-            var symbols = getSymbols();
-            var list = document.getElementById('monitorList');
-            var count = document.getElementById('monitorCount');
-            if (symbols.length === 0) {
-                list.innerHTML = '<li class="monitor-empty">尚未添加股票</li>';
-                count.textContent = '';
-                return;
-            }
-            count.textContent = '共 ' + symbols.length + ' 只';
-            list.innerHTML = symbols.map(function(s) {
-                return '<li class="monitor-item">' +
-                    '<div class="monitor-left">' +
-                        '<span class="monitor-symbol">' + s + '</span>' +
-                        '<span class="monitor-badge badge-active">监控中</span>' +
-                    '</div>' +
-                    '<button class="btn-remove" onclick="requestDelete(\'' + s + '\')" title="移除 ' + s + '">🗑️</button>' +
-                '</li>';
-            }).join('');
-        }
+                saveSymbols(symbols);
+                addToHistory(symbols);
 
-        // ===== 同步到云端 =====
-        async function syncToCloud() {
-            var token = getToken();
-            var repo = getRepo();
-            var symbols = getSymbols();
-            var btn = document.getElementById('syncBtn');
-
-            if (!token) {
-                showToast('请先在设置中填写 GitHub Token', 'error');
-                switchPage('settings', document.querySelectorAll('.nav-item')[4]);
-                return;
-            }
-            if (symbols.length === 0) {
-                showToast('监控列表为空，请先添加股票', 'error');
-                return;
-            }
-
-            var configContent = 'SYMBOLS = ' + JSON.stringify(symbols) + '\n';
-            btn.textContent = '⏳ 同步中...';
-            btn.classList.add('loading');
-
-            try {
-                var fileRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
-                    headers: { 'Authorization': 'token ' + token }
-                });
-                var fileData = await fileRes.json();
-
-                var updateRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
-                    method: 'PUT',
-                    headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: 'Update monitor: ' + symbols.join(', '),
-                        content: btoa(configContent),
-                        sha: fileData.sha
-                    })
-                });
-                if (!updateRes.ok) throw new Error('更新 config.py 失败');
-
-                var wfRes = await fetch('https://api.github.com/repos/' + repo + '/actions/workflows/daily_run.yml/dispatches', {
-                    method: 'POST',
-                    headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ref: 'main' })
-                });
-                if (!wfRes.ok && wfRes.status !== 204) throw new Error('触发 workflow 失败');
-
+                dot.classList.remove('offline');
+                text.textContent = '系统在线 · GitHub Actions';
+                syncStatus.textContent = '☁️ 已从云端同步 · ' + new Date().toLocaleTimeString();
                 markClean();
-                showToast('✅ 云端已同步！', 'success');
-            } catch (err) {
-                showToast('❌ ' + err.message, 'error');
-            } finally {
-                btn.textContent = '⚡ 同步到云端';
-                btn.classList.remove('loading');
+            } else {
+                throw new Error('config.py 格式异常');
             }
-        }
-
-        // ===== 初始化 =====
-        window.addEventListener('DOMContentLoaded', function() {
-            var saved = getToken();
-            if (saved) document.getElementById('tokenInput').value = saved;
+        } catch (err) {
+            dot.classList.add('offline');
+            text.textContent = '同步失败 · ' + err.message;
+            syncStatus.textContent = '';
+            // 仍然显示本地数据
             renderMonitorList();
-            renderHistory();
-            document.getElementById('symbolInput').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') { e.preventDefault(); addSymbols(); }
-            });
+        }
+    }
+
+    // ===== 添加股票 =====
+    function addSymbols() {
+        var input = document.getElementById('symbolInput');
+        var newStr = input.value.trim().toUpperCase();
+        if (!newStr) { showToast('请输入股票代码', 'error'); return; }
+
+        var newSymbols = newStr.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return /^[A-Z]{1,5}$/.test(s); });
+        if (newSymbols.length === 0) { showToast('请输入有效的股票代码', 'error'); return; }
+
+        var current = getSymbols();
+        var addedCount = 0;
+        newSymbols.forEach(function(s) {
+            if (current.indexOf(s) === -1) { current.push(s); addedCount++; }
         });
 
-        // ===== Toast =====
-        function showToast(msg, type) {
-            var t = document.getElementById('toast');
-            t.textContent = msg;
-            t.className = 'toast toast-' + type + ' show';
-            setTimeout(function() { t.classList.remove('show'); }, 3000);
+        if (addedCount === 0) { showToast('这些股票已在监控列表中', 'warning'); return; }
+
+        saveSymbols(current);
+        addToHistory(newSymbols);
+        input.value = '';
+        markDirty();
+        showToast('✅ 已添加 ' + addedCount + ' 只股票', 'success');
+    }
+
+    // ===== 删除股票 =====
+    var pendingDeleteSymbol = null;
+    function requestDelete(symbol) {
+        pendingDeleteSymbol = symbol;
+        document.getElementById('deleteTarget').textContent = symbol;
+        document.getElementById('deleteModal').classList.add('show');
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('show');
+        pendingDeleteSymbol = null;
+    }
+    function confirmDelete() {
+        if (!pendingDeleteSymbol) return;
+        var removed = pendingDeleteSymbol;
+        var current = getSymbols().filter(function(s) { return s !== removed; });
+        saveSymbols(current);
+        addToHistory([removed]);
+        closeDeleteModal();
+        markDirty();
+        showToast('🗑️ 已移除 ' + removed, 'success');
+    }
+
+    // ===== 渲染监控列表 =====
+    function renderMonitorList() {
+        var symbols = getSymbols();
+        var list = document.getElementById('monitorList');
+        var count = document.getElementById('monitorCount');
+        if (symbols.length === 0) {
+            list.innerHTML = '<li class="monitor-empty">尚未添加股票</li>';
+            count.textContent = '';
+            return;
         }
-    </script>
+        count.textContent = '共 ' + symbols.length + ' 只';
+        list.innerHTML = symbols.map(function(s) {
+            return '<li class="monitor-item">' +
+                '<div class="monitor-left">' +
+                    '<span class="monitor-symbol">' + s + '</span>' +
+                    '<span class="monitor-badge badge-active">监控中</span>' +
+                '</div>' +
+                '<button class="btn-remove" onclick="requestDelete(\'' + s + '\')" title="移除 ' + s + '">🗑️</button>' +
+            '</li>';
+        }).join('');
+    }
+
+    // ===== 同步到云端 =====
+    async function syncToCloud() {
+        var token = getToken();
+        var repo = getRepo();
+        var symbols = getSymbols();
+        var btn = document.getElementById('syncBtn');
+
+        if (!token) {
+            showToast('请先在设置中填写 GitHub Token', 'error');
+            switchPage('settings', document.querySelectorAll('.nav-item')[4]);
+            return;
+        }
+        if (symbols.length === 0) {
+            showToast('监控列表为空，请先添加股票', 'error');
+            return;
+        }
+
+        var configContent = 'SYMBOLS = ' + JSON.stringify(symbols) + '\n';
+        btn.textContent = '⏳ 同步中...';
+        btn.classList.add('loading');
+
+        try {
+            var fileRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
+                headers: { 'Authorization': 'token ' + token }
+            });
+            var fileData = await fileRes.json();
+
+            var updateRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
+                method: 'PUT',
+                headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: 'Update monitor: ' + symbols.join(', '),
+                    content: btoa(configContent),
+                    sha: fileData.sha
+                })
+            });
+            if (!updateRes.ok) throw new Error('更新 config.py 失败');
+
+            var wfRes = await fetch('https://api.github.com/repos/' + repo + '/actions/workflows/daily_run.yml/dispatches', {
+                method: 'POST',
+                headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ref: 'main' })
+            });
+            if (!wfRes.ok && wfRes.status !== 204) throw new Error('触发 workflow 失败');
+
+            markClean();
+            document.getElementById('syncStatus').textContent = '☁️ 已同步 · ' + new Date().toLocaleTimeString();
+            showToast('✅ 云端已同步！', 'success');
+        } catch (err) {
+            showToast('❌ ' + err.message, 'error');
+        } finally {
+            btn.textContent = '⚡ 同步到云端';
+            btn.classList.remove('loading');
+        }
+    }
+
+    // ===== 初始化 =====
+    window.addEventListener('DOMContentLoaded', function() {
+        var saved = getToken();
+        if (saved) document.getElementById('tokenInput').value = saved;
+
+        // 核心：启动时从云端拉取最新数据
+        fetchFromCloud();
+
+        document.getElementById('symbolInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); addSymbols(); }
+        });
+    });
+
+    // ===== Toast =====
+    function showToast(msg, type) {
+        var t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast toast-' + type + ' show';
+        setTimeout(function() { t.classList.remove('show'); }, 3000);
+    }
+</script>
+```
+
 </body>
 </html>
