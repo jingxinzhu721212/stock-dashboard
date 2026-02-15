@@ -29,9 +29,7 @@
             --glow-green: rgba(34, 197, 94, 0.15);
             --nav-height: 64px;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         body {
             font-family: 'Noto Sans SC', sans-serif;
             background: var(--bg-primary);
@@ -39,7 +37,6 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
-
         body::before {
             content: '';
             position: fixed;
@@ -51,396 +48,193 @@
             pointer-events: none;
             z-index: 0;
         }
-
         .page-container {
-            position: relative;
-            z-index: 1;
-            max-width: 480px;
-            margin: 0 auto;
+            position: relative; z-index: 1;
+            max-width: 480px; margin: 0 auto;
             padding: 16px 16px calc(var(--nav-height) + 24px);
         }
-
-        /* ===== 顶部 ===== */
         .header { text-align: center; margin-bottom: 20px; padding-top: 8px; }
-
         .header h1 {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: 2px;
+            font-size: 22px; font-weight: 700; letter-spacing: 2px;
             background: linear-gradient(135deg, var(--accent-green), #4ade80);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
         .header .subtitle {
-            font-size: 11px;
-            color: var(--text-dim);
-            margin-top: 3px;
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 1px;
+            font-size: 11px; color: var(--text-dim); margin-top: 3px;
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
         }
-
         .status-bar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-family: 'JetBrains Mono', monospace;
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; margin-bottom: 20px; font-size: 12px;
+            color: var(--text-secondary); font-family: 'JetBrains Mono', monospace;
         }
-
         .status-dot {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: var(--accent-green);
-            animation: pulse 2s infinite;
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--accent-green); animation: pulse 2s infinite;
         }
-
         @keyframes pulse {
             0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
             50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
         }
-
-        /* ===== 卡片 ===== */
         .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 18px;
-            margin-bottom: 14px;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 14px; padding: 18px; margin-bottom: 14px;
         }
-
         .card-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 14px;
+            font-size: 12px; font-weight: 700; color: var(--text-secondary);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px;
             font-family: 'JetBrains Mono', monospace;
         }
-
-        /* ===== 表单 ===== */
         .input-group { margin-bottom: 12px; }
-
-        .input-group label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 5px;
-        }
-
-        input[type="text"], select, textarea {
-            width: 100%;
-            padding: 13px 14px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text-primary);
-            font-size: 16px;
-            font-family: 'JetBrains Mono', monospace;
-            outline: none;
+        .input-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 5px; }
+        input[type="text"], select {
+            width: 100%; padding: 13px 14px; background: var(--bg-input);
+            border: 1px solid var(--border); border-radius: 10px;
+            color: var(--text-primary); font-size: 16px;
+            font-family: 'JetBrains Mono', monospace; outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--accent-green);
-            box-shadow: 0 0 0 3px var(--glow-green);
-        }
-
-        input::placeholder, textarea::placeholder { color: var(--text-dim); }
-
+        input:focus, select:focus { border-color: var(--accent-green); box-shadow: 0 0 0 3px var(--glow-green); }
+        input::placeholder { color: var(--text-dim); }
         select {
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a8ba8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 40px;
+            background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px;
         }
-
-        /* ===== 历史股票候选 ===== */
-        .history-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 8px;
-            min-height: 0;
-            transition: all 0.2s;
-        }
-
-        .history-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 7px 12px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.15s;
-            user-select: none;
-        }
-
-        .history-chip:active {
-            transform: scale(0.95);
-        }
-
-        .history-chip.selected {
-            background: var(--accent-green-dim);
-            border-color: var(--accent-green);
-            color: var(--accent-green);
-        }
-
-        .history-chip .chip-remove {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            font-size: 11px;
-            color: var(--text-dim);
-            margin-left: 2px;
-        }
-
-        .history-chip .chip-remove:hover {
-            color: var(--accent-red);
-        }
-
-        .history-label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 10px;
-            margin-bottom: 4px;
-        }
-
-        .history-label span {
-            font-size: 11px;
-            color: var(--text-dim);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .history-clear {
-            font-size: 11px;
-            color: var(--text-dim);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .history-clear:active { color: var(--accent-red); }
-
-        /* ===== 按钮 ===== */
-        .btn-primary {
-            width: 100%;
-            padding: 15px;
+        .add-row { display: flex; gap: 8px; }
+        .add-row input { flex: 1; }
+        .btn-add {
+            padding: 13px 20px;
             background: linear-gradient(135deg, var(--accent-green), #16a34a);
-            border: none;
-            border-radius: 12px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 700;
-            font-family: 'Noto Sans SC', sans-serif;
-            cursor: pointer;
+            border: none; border-radius: 10px; color: #fff;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            white-space: nowrap; font-family: 'Noto Sans SC', sans-serif;
             transition: transform 0.1s;
-            letter-spacing: 1px;
         }
-
+        .btn-add:active { transform: scale(0.95); }
+        .btn-primary {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, var(--accent-green), #16a34a);
+            border: none; border-radius: 12px; color: #fff;
+            font-size: 16px; font-weight: 700;
+            font-family: 'Noto Sans SC', sans-serif; cursor: pointer;
+            transition: transform 0.1s; letter-spacing: 1px;
+        }
         .btn-primary:active { transform: scale(0.97); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-primary.loading { background: linear-gradient(135deg, #1a5c32, #145228); pointer-events: none; }
-
-        /* ===== 监控列表 ===== */
         .monitor-list { list-style: none; }
-
         .monitor-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 11px 0;
-            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 0; border-bottom: 1px solid var(--border);
         }
-
         .monitor-item:last-child { border-bottom: none; }
-
-        .monitor-symbol {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 700;
-            font-size: 16px;
-        }
-
-        .monitor-badge {
-            font-size: 11px;
-            padding: 3px 9px;
-            border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
+        .monitor-left { display: flex; align-items: center; gap: 10px; }
+        .monitor-symbol { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 16px; }
+        .monitor-badge { font-size: 11px; padding: 3px 9px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; }
         .badge-active { background: var(--accent-green-dim); color: var(--accent-green); }
-
-        .signal-legend {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-top: 10px;
+        .btn-remove {
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            background: var(--accent-red-dim); border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px; color: var(--accent-red); font-size: 14px; cursor: pointer;
         }
-
-        .legend-tag {
-            font-size: 10px;
-            padding: 3px 7px;
-            border-radius: 5px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
+        .btn-remove:active { transform: scale(0.9); background: rgba(239, 68, 68, 0.3); }
+        .monitor-empty { color: var(--text-secondary); font-size: 13px; padding: 12px 0; text-align: center; }
+        .monitor-count { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 10px; }
+        .signal-legend { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+        .legend-tag { font-size: 10px; padding: 3px 7px; border-radius: 5px; font-family: 'JetBrains Mono', monospace; }
         .tag-left { background: var(--accent-yellow-dim); color: var(--accent-yellow); }
         .tag-right { background: var(--glow-green); color: var(--accent-green); }
         .tag-br { background: var(--accent-blue-dim); color: var(--accent-blue); }
-
-        /* ===== 底部导航 ===== */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0; right: 0;
-            height: var(--nav-height);
-            background: rgba(17, 24, 39, 0.95);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 50;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: var(--nav-height); background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(12px); border-top: 1px solid var(--border);
+            display: flex; justify-content: center; align-items: center; z-index: 50;
             padding-bottom: env(safe-area-inset-bottom, 0);
         }
-
-        .nav-inner {
-            display: flex;
-            justify-content: space-around;
-            width: 100%;
-            max-width: 480px;
-        }
-
+        .nav-inner { display: flex; justify-content: space-around; width: 100%; max-width: 480px; }
         .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            padding: 6px 12px;
-            cursor: pointer;
-            color: var(--text-dim);
-            transition: color 0.2s;
-            border: none;
-            background: none;
-            font-family: 'Noto Sans SC', sans-serif;
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            padding: 6px 12px; cursor: pointer; color: var(--text-dim);
+            border: none; background: none; font-family: 'Noto Sans SC', sans-serif;
         }
-
         .nav-item.active { color: var(--accent-green); }
         .nav-item .nav-icon { font-size: 20px; }
         .nav-item .nav-label { font-size: 10px; letter-spacing: 0.5px; }
         .nav-item.coming-soon { opacity: 0.35; }
-
-        /* ===== 页面切换 ===== */
         .page { display: none; }
         .page.active { display: block; }
-
-        /* ===== 设置 ===== */
         .settings-section { margin-bottom: 14px; }
-
-        .help-text {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 5px;
-            line-height: 1.5;
-        }
-
+        .help-text { font-size: 11px; color: var(--text-secondary); margin-top: 5px; line-height: 1.5; }
         .help-text a { color: var(--accent-blue); text-decoration: none; }
-
         .token-row { display: flex; gap: 8px; }
         .token-row input { flex: 1; }
-
         .btn-small {
-            padding: 13px 16px;
-            background: var(--accent-green-dim);
-            color: var(--accent-green);
-            border: none;
-            border-radius: 10px;
-            font-size: 13px;
-            cursor: pointer;
-            white-space: nowrap;
-            font-family: 'Noto Sans SC', sans-serif;
+            padding: 13px 16px; background: var(--accent-green-dim); color: var(--accent-green);
+            border: none; border-radius: 10px; font-size: 13px; cursor: pointer;
+            white-space: nowrap; font-family: 'Noto Sans SC', sans-serif;
         }
-
-        /* ===== 占位页面 ===== */
         .placeholder { text-align: center; padding: 60px 20px; }
         .placeholder-icon { font-size: 48px; margin-bottom: 16px; }
         .placeholder-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
         .placeholder-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
-
-        /* ===== Toast ===== */
         .toast {
-            position: fixed;
-            top: 20px;
-            left: 50%;
+            position: fixed; top: 20px; left: 50%;
             transform: translateX(-50%) translateY(-100px);
-            padding: 12px 24px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 100;
-            transition: transform 0.3s ease;
-            max-width: 90%;
-            text-align: center;
+            padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 500;
+            z-index: 100; transition: transform 0.3s ease; max-width: 90%; text-align: center;
         }
-
         .toast.show { transform: translateX(-50%) translateY(0); }
         .toast-success { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid var(--accent-green); }
         .toast-error { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid var(--accent-red); }
-
-        .version-info {
-            text-align: center;
-            padding: 16px 0;
-            font-size: 11px;
-            color: #1e2d45;
-            font-family: 'JetBrains Mono', monospace;
+        .toast-warning { background: var(--accent-yellow-dim); color: var(--accent-yellow); border: 1px solid var(--accent-yellow); }
+        .modal-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7); z-index: 200;
+            align-items: center; justify-content: center;
         }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 24px; width: 85%; max-width: 340px; text-align: center;
+        }
+        .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+        .modal-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.5; }
+        .modal-desc .modal-symbol { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent-red); }
+        .modal-btns { display: flex; gap: 10px; }
+        .modal-btn {
+            flex: 1; padding: 12px; border-radius: 10px; border: none;
+            font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans SC', sans-serif;
+        }
+        .modal-btn-cancel { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
+        .modal-btn-danger { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .modal-btn:active { transform: scale(0.97); }
+        .version-info { text-align: center; padding: 16px 0; font-size: 11px; color: #1e2d45; font-family: 'JetBrains Mono', monospace; }
+        .needs-sync { display: none; align-items: center; gap: 6px; padding: 8px 12px; background: var(--accent-yellow-dim); border: 1px solid rgba(234,179,8,0.3); border-radius: 8px; margin-bottom: 12px; font-size: 12px; color: var(--accent-yellow); }
+        .needs-sync.show { display: flex; }
     </style>
 </head>
 <body>
     <div class="page-container">
-
         <div class="header">
             <h1>🚀 AI 指挥舱</h1>
-            <div class="subtitle">STOCK COMMAND CENTER v2.0</div>
+            <div class="subtitle">STOCK COMMAND CENTER v2.1</div>
         </div>
-
         <div class="status-bar">
             <span class="status-dot"></span>
             <span>系统在线 · GitHub Actions</span>
         </div>
 
-        <!-- ===== 页面1: 指挥中心 ===== -->
+        <!-- 页面1: 指挥中心 -->
         <div class="page active" id="page-command">
             <div class="card">
-                <div class="card-title">📡 任务部署</div>
+                <div class="card-title">➕ 添加监控</div>
                 <div class="input-group">
-                    <label>监控目标（多个用逗号隔开）</label>
-                    <input type="text" id="symbolInput" placeholder="AAPL, MSFT, NFLX" autocapitalize="characters">
-                    
-                    <!-- 历史候选 -->
-                    <div id="historySection" style="display:none;">
-                        <div class="history-label">
-                            <span>📌 历史记录 (点击选取)</span>
-                            <button class="history-clear" onclick="clearHistory()">清除全部</button>
-                        </div>
-                        <div class="history-chips" id="historyChips"></div>
+                    <label>输入新股票代码（多个用逗号隔开）</label>
+                    <div class="add-row">
+                        <input type="text" id="symbolInput" placeholder="AAPL, TSLA" autocapitalize="characters">
+                        <button class="btn-add" onclick="addSymbols()">添加</button>
                     </div>
                 </div>
                 <div class="input-group">
@@ -452,13 +246,15 @@
                         <option value="br">🔵 右侧: 底部反转(BR)</option>
                     </select>
                 </div>
-                <button class="btn-primary" id="deployBtn" onclick="deploy()">⚡ 同步到云端并运行</button>
+                <div class="needs-sync" id="needsSync">⚠️ 列表已变更，请同步到云端</div>
+                <button class="btn-primary" id="syncBtn" onclick="syncToCloud()">⚡ 同步到云端</button>
             </div>
 
             <div class="card">
                 <div class="card-title">📋 当前监控</div>
+                <div class="monitor-count" id="monitorCount"></div>
                 <ul class="monitor-list" id="monitorList">
-                    <li class="monitor-item" style="color: var(--text-secondary); font-size: 13px;">尚未部署任务</li>
+                    <li class="monitor-empty">尚未添加股票</li>
                 </ul>
                 <div class="signal-legend">
                     <span class="legend-tag tag-left">🟡 止跌形态</span>
@@ -466,50 +262,33 @@
                     <span class="legend-tag tag-br">🔵 底部反转</span>
                 </div>
             </div>
-
-            <div class="version-info">v2.0 · 三重信号检测</div>
+            <div class="version-info">v2.1 · 三重信号检测</div>
         </div>
 
-        <!-- ===== 页面2: 分析器 (预留) ===== -->
+        <!-- 页面2-4: 预留 -->
         <div class="page" id="page-analyze">
             <div class="placeholder">
                 <div class="placeholder-icon">🔬</div>
                 <div class="placeholder-title">股票分析器</div>
-                <div class="placeholder-desc">
-                    输入股票代码，自动进行多维度分析<br>
-                    基本面 · 技术面 · 资金面<br><br>
-                    🚧 开发中 · 即将上线
-                </div>
+                <div class="placeholder-desc">输入股票代码，自动进行多维度分析<br>基本面 · 技术面 · 资金面<br><br>🚧 开发中 · 即将上线</div>
             </div>
         </div>
-
-        <!-- ===== 页面3: 筛选器 (预留) ===== -->
         <div class="page" id="page-screener">
             <div class="placeholder">
                 <div class="placeholder-icon">🎯</div>
                 <div class="placeholder-title">智能筛选器</div>
-                <div class="placeholder-desc">
-                    根据策略条件自动筛选最适合的股票<br>
-                    筛选器 + 策略融合 · 一键式操作<br><br>
-                    🚧 开发中 · 即将上线
-                </div>
+                <div class="placeholder-desc">根据策略条件自动筛选最适合的股票<br>筛选器 + 策略融合 · 一键式操作<br><br>🚧 开发中 · 即将上线</div>
             </div>
         </div>
-
-        <!-- ===== 页面4: 信号记录 (预留) ===== -->
         <div class="page" id="page-signals">
             <div class="placeholder">
                 <div class="placeholder-icon">📊</div>
                 <div class="placeholder-title">信号记录</div>
-                <div class="placeholder-desc">
-                    查看历史信号 · 胜率统计 · 回测结果<br>
-                    记录每一次交易决策<br><br>
-                    🚧 开发中 · 即将上线
-                </div>
+                <div class="placeholder-desc">查看历史信号 · 胜率统计 · 回测结果<br>记录每一次交易决策<br><br>🚧 开发中 · 即将上线</div>
             </div>
         </div>
 
-        <!-- ===== 页面5: 设置 ===== -->
+        <!-- 页面5: 设置 -->
         <div class="page" id="page-settings">
             <div class="card">
                 <div class="card-title">🔑 GitHub 连接</div>
@@ -521,17 +300,15 @@
                             <button class="btn-small" onclick="saveToken()">保存</button>
                         </div>
                         <div class="help-text">
-                            <a href="https://github.com/settings/tokens/new" target="_blank">点此创建 Token</a>
-                            · 勾选 repo + workflow 权限
+                            <a href="https://github.com/settings/tokens/new" target="_blank">点此创建 Token</a> · 勾选 repo + workflow 权限
                         </div>
                     </div>
                     <div class="input-group">
-                        <label>仓库地址</label>
+                        <label>仓库地址（策略运行的仓库）</label>
                         <input type="text" id="repoInput" value="jingxinzhu721212/NFLX_Monitor">
                     </div>
                 </div>
             </div>
-
             <div class="card">
                 <div class="card-title">📱 通知设置</div>
                 <div class="settings-section">
@@ -542,70 +319,63 @@
                     </div>
                 </div>
             </div>
-
             <div class="card">
                 <div class="card-title">⚙️ 策略参数</div>
                 <div class="settings-section">
-                    <div class="input-group">
-                        <label>增量止跌 — 回看天数</label>
-                        <input type="text" id="paramLookback" value="20">
-                    </div>
-                    <div class="input-group">
-                        <label>增量止跌 — 最低跌幅 (%)</label>
-                        <input type="text" id="paramDropPct" value="10">
-                    </div>
-                    <div class="input-group">
-                        <label>增量止跌 — 放量倍数</label>
-                        <input type="text" id="paramVolRatio" value="1.5">
-                    </div>
-                    <div class="help-text">修改参数后需重新部署才会生效</div>
+                    <div class="input-group"><label>增量止跌 — 回看天数</label><input type="text" id="paramLookback" value="20"></div>
+                    <div class="input-group"><label>增量止跌 — 最低跌幅 (%)</label><input type="text" id="paramDropPct" value="10"></div>
+                    <div class="input-group"><label>增量止跌 — 放量倍数</label><input type="text" id="paramVolRatio" value="1.5"></div>
+                    <div class="help-text">修改参数后需点「同步到云端」才会生效</div>
                 </div>
             </div>
-
             <div class="card">
                 <div class="card-title">ℹ️ 关于</div>
                 <div class="help-text" style="line-height: 2;">
-                    AI 指挥舱 v2.0<br>
-                    三重信号检测系统<br>
-                    🟡 左侧: 增量止跌形态<br>
-                    🟢 右侧: 股价上穿50日均线<br>
-                    🔵 右侧: 底部反转(BR)<br><br>
+                    AI 指挥舱 v2.1<br>三重信号检测系统<br>
+                    🟡 左侧: 增量止跌形态<br>🟢 右侧: 股价上穿50日均线<br>🔵 右侧: 底部反转(BR)<br><br>
                     Powered by GitHub Actions + Discord
                 </div>
             </div>
         </div>
-
     </div>
 
-    <!-- 底部导航 -->
     <nav class="bottom-nav">
         <div class="nav-inner">
-            <button class="nav-item active" onclick="switchPage('command', this)">
-                <span class="nav-icon">📡</span>
-                <span class="nav-label">指挥</span>
-            </button>
-            <button class="nav-item coming-soon" onclick="switchPage('analyze', this)">
-                <span class="nav-icon">🔬</span>
-                <span class="nav-label">分析</span>
-            </button>
-            <button class="nav-item coming-soon" onclick="switchPage('screener', this)">
-                <span class="nav-icon">🎯</span>
-                <span class="nav-label">筛选</span>
-            </button>
-            <button class="nav-item coming-soon" onclick="switchPage('signals', this)">
-                <span class="nav-icon">📊</span>
-                <span class="nav-label">信号</span>
-            </button>
-            <button class="nav-item" onclick="switchPage('settings', this)">
-                <span class="nav-icon">⚙️</span>
-                <span class="nav-label">设置</span>
-            </button>
+            <button class="nav-item active" onclick="switchPage('command', this)"><span class="nav-icon">📡</span><span class="nav-label">指挥</span></button>
+            <button class="nav-item coming-soon" onclick="switchPage('analyze', this)"><span class="nav-icon">🔬</span><span class="nav-label">分析</span></button>
+            <button class="nav-item coming-soon" onclick="switchPage('screener', this)"><span class="nav-icon">🎯</span><span class="nav-label">筛选</span></button>
+            <button class="nav-item coming-soon" onclick="switchPage('signals', this)"><span class="nav-icon">📊</span><span class="nav-label">信号</span></button>
+            <button class="nav-item" onclick="switchPage('settings', this)"><span class="nav-icon">⚙️</span><span class="nav-label">设置</span></button>
         </div>
     </nav>
 
     <div class="toast" id="toast"></div>
 
+    <!-- 删除确认弹窗 -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box">
+            <div class="modal-title">确认删除</div>
+            <div class="modal-desc">确定要移除 <span class="modal-symbol" id="deleteTarget"></span> 吗？<br>移除后需同步到云端才会生效</div>
+            <div class="modal-btns">
+                <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">取消</button>
+                <button class="modal-btn modal-btn-danger" onclick="confirmDelete()">删除</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // ===== 数据层 =====
+        function getSymbols() {
+            try { return JSON.parse(localStorage.getItem('monitor_symbols') || '[]'); }
+            catch { return []; }
+        }
+        function saveSymbols(symbols) {
+            localStorage.setItem('monitor_symbols', JSON.stringify(symbols));
+            renderMonitorList();
+        }
+        function markDirty() { document.getElementById('needsSync').classList.add('show'); }
+        function markClean() { document.getElementById('needsSync').classList.remove('show'); }
+
         // ===== 页面切换 =====
         function switchPage(pageId, navEl) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -614,193 +384,150 @@
             navEl.classList.add('active');
         }
 
-        // ===== 本地存储 =====
+        // ===== Token =====
         function getToken() { return localStorage.getItem('gh_token') || ''; }
         function getRepo() { return document.getElementById('repoInput').value.trim(); }
-
-        // ===== 历史股票管理 =====
-        function getHistory() {
-            try {
-                return JSON.parse(localStorage.getItem('symbol_history') || '[]');
-            } catch { return []; }
-        }
-
-        function saveToHistory(symbols) {
-            let history = getHistory();
-            symbols.forEach(s => {
-                s = s.trim().toUpperCase();
-                if (s && !history.includes(s)) {
-                    history.unshift(s); // 新的排前面
-                }
-            });
-            // 最多保存 30 个
-            history = history.slice(0, 30);
-            localStorage.setItem('symbol_history', JSON.stringify(history));
-            renderHistory();
-        }
-
-        function removeFromHistory(symbol) {
-            let history = getHistory().filter(s => s !== symbol);
-            localStorage.setItem('symbol_history', JSON.stringify(history));
-            renderHistory();
-        }
-
-        function clearHistory() {
-            localStorage.removeItem('symbol_history');
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const history = getHistory();
-            const section = document.getElementById('historySection');
-            const container = document.getElementById('historyChips');
-            const currentInput = document.getElementById('symbolInput').value.toUpperCase();
-            const currentSymbols = currentInput.split(',').map(s => s.trim()).filter(s => s);
-
-            if (history.length === 0) {
-                section.style.display = 'none';
-                return;
-            }
-
-            section.style.display = 'block';
-            container.innerHTML = history.map(s => {
-                const isSelected = currentSymbols.includes(s);
-                return `<span class="history-chip ${isSelected ? 'selected' : ''}" onclick="toggleSymbol('${s}')">
-                    ${s}
-                    <span class="chip-remove" onclick="event.stopPropagation(); removeFromHistory('${s}')">✕</span>
-                </span>`;
-            }).join('');
-        }
-
-        function toggleSymbol(symbol) {
-            const input = document.getElementById('symbolInput');
-            let current = input.value.toUpperCase().split(',').map(s => s.trim()).filter(s => s);
-
-            if (current.includes(symbol)) {
-                // 已选中 → 取消
-                current = current.filter(s => s !== symbol);
-            } else {
-                // 未选中 → 加入
-                current.push(symbol);
-            }
-
-            input.value = current.join(', ');
-            renderHistory(); // 刷新选中状态
-        }
-
-        // ===== 初始化 =====
-        window.addEventListener('DOMContentLoaded', () => {
-            const saved = getToken();
-            if (saved) document.getElementById('tokenInput').value = saved;
-
-            const lastSymbols = localStorage.getItem('last_symbols');
-            if (lastSymbols) {
-                document.getElementById('symbolInput').value = lastSymbols;
-                updateMonitorList(lastSymbols.split(',').map(s => s.trim()));
-            }
-
-            renderHistory();
-
-            // 输入框变化时刷新选中状态
-            document.getElementById('symbolInput').addEventListener('input', renderHistory);
-        });
-
         function saveToken() {
             const token = document.getElementById('tokenInput').value.trim();
-            if (token) {
-                localStorage.setItem('gh_token', token);
-                showToast('Token 已保存', 'success');
-            }
+            if (token) { localStorage.setItem('gh_token', token); showToast('Token 已保存', 'success'); }
         }
 
-        // ===== 部署 =====
-        async function deploy() {
+        // ===== 添加股票（只添加，不覆盖） =====
+        function addSymbols() {
+            const input = document.getElementById('symbolInput');
+            const newStr = input.value.trim().toUpperCase();
+            if (!newStr) { showToast('请输入股票代码', 'error'); return; }
+
+            const newSymbols = newStr.split(',').map(s => s.trim()).filter(s => /^[A-Z]{1,5}$/.test(s));
+            if (newSymbols.length === 0) { showToast('请输入有效的股票代码', 'error'); return; }
+
+            const current = getSymbols();
+            let addedCount = 0;
+            newSymbols.forEach(s => {
+                if (!current.includes(s)) { current.push(s); addedCount++; }
+            });
+
+            if (addedCount === 0) { showToast('这些股票已在监控列表中', 'warning'); return; }
+
+            saveSymbols(current);
+            input.value = '';
+            markDirty();
+            showToast('✅ 已添加 ' + addedCount + ' 只股票', 'success');
+        }
+
+        // ===== 删除股票 =====
+        let pendingDeleteSymbol = null;
+        function requestDelete(symbol) {
+            pendingDeleteSymbol = symbol;
+            document.getElementById('deleteTarget').textContent = symbol;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            pendingDeleteSymbol = null;
+        }
+        function confirmDelete() {
+            if (!pendingDeleteSymbol) return;
+            const removed = pendingDeleteSymbol;
+            const current = getSymbols().filter(s => s !== removed);
+            saveSymbols(current);
+            closeDeleteModal();
+            markDirty();
+            showToast('🗑️ 已移除 ' + removed, 'success');
+        }
+
+        // ===== 渲染监控列表 =====
+        function renderMonitorList() {
+            const symbols = getSymbols();
+            const list = document.getElementById('monitorList');
+            const count = document.getElementById('monitorCount');
+            if (symbols.length === 0) {
+                list.innerHTML = '<li class="monitor-empty">尚未添加股票</li>';
+                count.textContent = '';
+                return;
+            }
+            count.textContent = '共 ' + symbols.length + ' 只';
+            list.innerHTML = symbols.map(s =>
+                '<li class="monitor-item">' +
+                    '<div class="monitor-left">' +
+                        '<span class="monitor-symbol">' + s + '</span>' +
+                        '<span class="monitor-badge badge-active">监控中</span>' +
+                    '</div>' +
+                    '<button class="btn-remove" onclick="requestDelete(\'' + s + '\')" title="移除 ' + s + '">🗑️</button>' +
+                '</li>'
+            ).join('');
+        }
+
+        // ===== 同步到云端 =====
+        async function syncToCloud() {
             const token = getToken();
             const repo = getRepo();
-            const symbolStr = document.getElementById('symbolInput').value.trim().toUpperCase();
-            const btn = document.getElementById('deployBtn');
+            const symbols = getSymbols();
+            const btn = document.getElementById('syncBtn');
 
             if (!token) {
                 showToast('请先在设置中填写 GitHub Token', 'error');
                 switchPage('settings', document.querySelectorAll('.nav-item')[4]);
                 return;
             }
-
-            if (!symbolStr) {
-                showToast('请输入股票代码', 'error');
+            if (symbols.length === 0) {
+                showToast('监控列表为空，请先添加股票', 'error');
                 return;
             }
 
-            const symbols = symbolStr.split(',').map(s => s.trim()).filter(s => s);
-            const configContent = `SYMBOLS = ${JSON.stringify(symbols)}\n`;
-
+            const configContent = 'SYMBOLS = ' + JSON.stringify(symbols) + '\n';
             btn.textContent = '⏳ 同步中...';
             btn.classList.add('loading');
 
             try {
-                // 1. 获取 config.py 的 SHA
-                const fileRes = await fetch(`https://api.github.com/repos/${repo}/contents/config.py`, {
-                    headers: { 'Authorization': `token ${token}` }
+                const fileRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
+                    headers: { 'Authorization': 'token ' + token }
                 });
                 const fileData = await fileRes.json();
 
-                // 2. 更新 config.py
-                const updateRes = await fetch(`https://api.github.com/repos/${repo}/contents/config.py`, {
+                const updateRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
                     method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        message: `Update monitor: ${symbolStr}`,
+                        message: 'Update monitor: ' + symbols.join(', '),
                         content: btoa(configContent),
                         sha: fileData.sha
                     })
                 });
-
                 if (!updateRes.ok) throw new Error('更新 config.py 失败');
 
-                // 3. 触发 workflow
-                const wfRes = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/daily_run.yml/dispatches`, {
+                const wfRes = await fetch('https://api.github.com/repos/' + repo + '/actions/workflows/daily_run.yml/dispatches', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ref: 'main' })
                 });
-
                 if (!wfRes.ok && wfRes.status !== 204) throw new Error('触发 workflow 失败');
 
-                // 保存
-                localStorage.setItem('last_symbols', symbolStr);
-                saveToHistory(symbols); // 保存到历史记录
-                updateMonitorList(symbols);
+                markClean();
                 showToast('✅ 云端已同步！', 'success');
-
             } catch (err) {
                 showToast('❌ ' + err.message, 'error');
             } finally {
-                btn.textContent = '⚡ 同步到云端并运行';
+                btn.textContent = '⚡ 同步到云端';
                 btn.classList.remove('loading');
             }
         }
 
-        // ===== 监控列表 =====
-        function updateMonitorList(symbols) {
-            document.getElementById('monitorList').innerHTML = symbols.map(s => `
-                <li class="monitor-item">
-                    <span class="monitor-symbol">${s}</span>
-                    <span class="monitor-badge badge-active">监控中</span>
-                </li>
-            `).join('');
-        }
+        // ===== 初始化 =====
+        window.addEventListener('DOMContentLoaded', () => {
+            const saved = getToken();
+            if (saved) document.getElementById('tokenInput').value = saved;
+            renderMonitorList();
+            document.getElementById('symbolInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); addSymbols(); }
+            });
+        });
 
         // ===== Toast =====
         function showToast(msg, type) {
             const t = document.getElementById('toast');
             t.textContent = msg;
-            t.className = `toast toast-${type} show`;
+            t.className = 'toast toast-' + type + ' show';
             setTimeout(() => t.classList.remove('show'), 3000);
         }
     </script>
