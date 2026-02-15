@@ -113,6 +113,40 @@
             transition: transform 0.1s;
         }
         .btn-add:active { transform: scale(0.95); }
+        /* 历史记录标签 */
+        .history-section { display: none; margin-top: 10px; }
+        .history-section.show { display: block; }
+        .history-label {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .history-label span { font-size: 11px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+        .history-clear {
+            font-size: 11px; color: var(--text-dim); background: none;
+            border: none; cursor: pointer; font-family: 'JetBrains Mono', monospace;
+        }
+        .history-clear:active { color: var(--accent-red); }
+        .history-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .history-chip {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 7px 12px; background: var(--bg-input);
+            border: 1px solid var(--border); border-radius: 8px;
+            color: var(--text-secondary); font-size: 13px;
+            font-family: 'JetBrains Mono', monospace; font-weight: 600;
+            cursor: pointer; transition: all 0.15s; user-select: none;
+        }
+        .history-chip:active { transform: scale(0.95); }
+        .history-chip.in-list {
+            background: var(--accent-green-dim); border-color: var(--accent-green);
+            color: var(--accent-green); opacity: 0.5; cursor: default;
+        }
+        .history-chip .chip-x {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; border-radius: 50%;
+            font-size: 11px; color: var(--text-dim); margin-left: 2px;
+        }
+        .history-chip .chip-x:hover { color: var(--accent-red); }
+        /* 按钮 */
         .btn-primary {
             width: 100%; padding: 15px;
             background: linear-gradient(135deg, var(--accent-green), #16a34a);
@@ -210,16 +244,16 @@
         .modal-btn-cancel { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
         .modal-btn-danger { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
         .modal-btn:active { transform: scale(0.97); }
-        .version-info { text-align: center; padding: 16px 0; font-size: 11px; color: #1e2d45; font-family: 'JetBrains Mono', monospace; }
         .needs-sync { display: none; align-items: center; gap: 6px; padding: 8px 12px; background: var(--accent-yellow-dim); border: 1px solid rgba(234,179,8,0.3); border-radius: 8px; margin-bottom: 12px; font-size: 12px; color: var(--accent-yellow); }
         .needs-sync.show { display: flex; }
+        .version-info { text-align: center; padding: 16px 0; font-size: 11px; color: #1e2d45; font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
 <body>
     <div class="page-container">
         <div class="header">
             <h1>🚀 AI 指挥舱</h1>
-            <div class="subtitle">STOCK COMMAND CENTER v2.1</div>
+            <div class="subtitle">STOCK COMMAND CENTER v2.2</div>
         </div>
         <div class="status-bar">
             <span class="status-dot"></span>
@@ -235,6 +269,14 @@
                     <div class="add-row">
                         <input type="text" id="symbolInput" placeholder="AAPL, TSLA" autocapitalize="characters">
                         <button class="btn-add" onclick="addSymbols()">添加</button>
+                    </div>
+                    <!-- 历史记录 -->
+                    <div class="history-section" id="historySection">
+                        <div class="history-label">
+                            <span>📌 曾用代码（点击快速添加）</span>
+                            <button class="history-clear" onclick="clearHistory()">清除记录</button>
+                        </div>
+                        <div class="history-chips" id="historyChips"></div>
                     </div>
                 </div>
                 <div class="input-group">
@@ -262,7 +304,7 @@
                     <span class="legend-tag tag-br">🔵 底部反转</span>
                 </div>
             </div>
-            <div class="version-info">v2.1 · 三重信号检测</div>
+            <div class="version-info">v2.2 · 三重信号检测</div>
         </div>
 
         <!-- 页面2-4: 预留 -->
@@ -331,7 +373,7 @@
             <div class="card">
                 <div class="card-title">ℹ️ 关于</div>
                 <div class="help-text" style="line-height: 2;">
-                    AI 指挥舱 v2.1<br>三重信号检测系统<br>
+                    AI 指挥舱 v2.2<br>三重信号检测系统<br>
                     🟡 左侧: 增量止跌形态<br>🟢 右侧: 股价上穿50日均线<br>🔵 右侧: 底部反转(BR)<br><br>
                     Powered by GitHub Actions + Discord
                 </div>
@@ -351,7 +393,6 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- 删除确认弹窗 -->
     <div class="modal-overlay" id="deleteModal">
         <div class="modal-box">
             <div class="modal-title">确认删除</div>
@@ -364,7 +405,7 @@
     </div>
 
     <script>
-        // ===== 数据层 =====
+        // ===== 监控列表（当前正在监控的） =====
         function getSymbols() {
             try { return JSON.parse(localStorage.getItem('monitor_symbols') || '[]'); }
             catch { return []; }
@@ -372,14 +413,70 @@
         function saveSymbols(symbols) {
             localStorage.setItem('monitor_symbols', JSON.stringify(symbols));
             renderMonitorList();
+            renderHistory();
         }
-        function markDirty() { document.getElementById('needsSync').classList.add('show'); }
-        function markClean() { document.getElementById('needsSync').classList.remove('show'); }
+
+        // ===== 历史记录（所有曾经输入过的，包括已删除的） =====
+        function getHistory() {
+            try { return JSON.parse(localStorage.getItem('symbol_history') || '[]'); }
+            catch { return []; }
+        }
+        function addToHistory(symbols) {
+            var history = getHistory();
+            symbols.forEach(function(s) {
+                if (s && history.indexOf(s) === -1) { history.unshift(s); }
+            });
+            history = history.slice(0, 50);
+            localStorage.setItem('symbol_history', JSON.stringify(history));
+            renderHistory();
+        }
+        function removeFromHistory(symbol) {
+            var history = getHistory().filter(function(s) { return s !== symbol; });
+            localStorage.setItem('symbol_history', JSON.stringify(history));
+            renderHistory();
+        }
+        function clearHistory() {
+            localStorage.removeItem('symbol_history');
+            renderHistory();
+        }
+
+        function renderHistory() {
+            var history = getHistory();
+            var section = document.getElementById('historySection');
+            var container = document.getElementById('historyChips');
+            var currentList = getSymbols();
+
+            // 只显示不在当前监控列表里的历史股票
+            var available = history.filter(function(s) { return currentList.indexOf(s) === -1; });
+
+            if (available.length === 0) {
+                section.classList.remove('show');
+                return;
+            }
+
+            section.classList.add('show');
+            container.innerHTML = available.map(function(s) {
+                return '<span class="history-chip" onclick="quickAdd(\'' + s + '\')">' +
+                    s +
+                    '<span class="chip-x" onclick="event.stopPropagation(); removeFromHistory(\'' + s + '\')">✕</span>' +
+                '</span>';
+            }).join('');
+        }
+
+        // 点击历史标签 → 直接添加到监控列表
+        function quickAdd(symbol) {
+            var current = getSymbols();
+            if (current.indexOf(symbol) !== -1) return;
+            current.push(symbol);
+            saveSymbols(current);
+            markDirty();
+            showToast('✅ 已添加 ' + symbol, 'success');
+        }
 
         // ===== 页面切换 =====
         function switchPage(pageId, navEl) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+            document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
             document.getElementById('page-' + pageId).classList.add('active');
             navEl.classList.add('active');
         }
@@ -388,35 +485,40 @@
         function getToken() { return localStorage.getItem('gh_token') || ''; }
         function getRepo() { return document.getElementById('repoInput').value.trim(); }
         function saveToken() {
-            const token = document.getElementById('tokenInput').value.trim();
+            var token = document.getElementById('tokenInput').value.trim();
             if (token) { localStorage.setItem('gh_token', token); showToast('Token 已保存', 'success'); }
         }
 
+        // ===== 同步提醒 =====
+        function markDirty() { document.getElementById('needsSync').classList.add('show'); }
+        function markClean() { document.getElementById('needsSync').classList.remove('show'); }
+
         // ===== 添加股票（只添加，不覆盖） =====
         function addSymbols() {
-            const input = document.getElementById('symbolInput');
-            const newStr = input.value.trim().toUpperCase();
+            var input = document.getElementById('symbolInput');
+            var newStr = input.value.trim().toUpperCase();
             if (!newStr) { showToast('请输入股票代码', 'error'); return; }
 
-            const newSymbols = newStr.split(',').map(s => s.trim()).filter(s => /^[A-Z]{1,5}$/.test(s));
+            var newSymbols = newStr.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return /^[A-Z]{1,5}$/.test(s); });
             if (newSymbols.length === 0) { showToast('请输入有效的股票代码', 'error'); return; }
 
-            const current = getSymbols();
-            let addedCount = 0;
-            newSymbols.forEach(s => {
-                if (!current.includes(s)) { current.push(s); addedCount++; }
+            var current = getSymbols();
+            var addedCount = 0;
+            newSymbols.forEach(function(s) {
+                if (current.indexOf(s) === -1) { current.push(s); addedCount++; }
             });
 
             if (addedCount === 0) { showToast('这些股票已在监控列表中', 'warning'); return; }
 
             saveSymbols(current);
+            addToHistory(newSymbols);
             input.value = '';
             markDirty();
             showToast('✅ 已添加 ' + addedCount + ' 只股票', 'success');
         }
 
         // ===== 删除股票 =====
-        let pendingDeleteSymbol = null;
+        var pendingDeleteSymbol = null;
         function requestDelete(symbol) {
             pendingDeleteSymbol = symbol;
             document.getElementById('deleteTarget').textContent = symbol;
@@ -428,9 +530,11 @@
         }
         function confirmDelete() {
             if (!pendingDeleteSymbol) return;
-            const removed = pendingDeleteSymbol;
-            const current = getSymbols().filter(s => s !== removed);
+            var removed = pendingDeleteSymbol;
+            var current = getSymbols().filter(function(s) { return s !== removed; });
             saveSymbols(current);
+            // 删除的股票会自动出现在历史记录里，方便以后重新添加
+            addToHistory([removed]);
             closeDeleteModal();
             markDirty();
             showToast('🗑️ 已移除 ' + removed, 'success');
@@ -438,32 +542,32 @@
 
         // ===== 渲染监控列表 =====
         function renderMonitorList() {
-            const symbols = getSymbols();
-            const list = document.getElementById('monitorList');
-            const count = document.getElementById('monitorCount');
+            var symbols = getSymbols();
+            var list = document.getElementById('monitorList');
+            var count = document.getElementById('monitorCount');
             if (symbols.length === 0) {
                 list.innerHTML = '<li class="monitor-empty">尚未添加股票</li>';
                 count.textContent = '';
                 return;
             }
             count.textContent = '共 ' + symbols.length + ' 只';
-            list.innerHTML = symbols.map(s =>
-                '<li class="monitor-item">' +
+            list.innerHTML = symbols.map(function(s) {
+                return '<li class="monitor-item">' +
                     '<div class="monitor-left">' +
                         '<span class="monitor-symbol">' + s + '</span>' +
                         '<span class="monitor-badge badge-active">监控中</span>' +
                     '</div>' +
                     '<button class="btn-remove" onclick="requestDelete(\'' + s + '\')" title="移除 ' + s + '">🗑️</button>' +
-                '</li>'
-            ).join('');
+                '</li>';
+            }).join('');
         }
 
         // ===== 同步到云端 =====
         async function syncToCloud() {
-            const token = getToken();
-            const repo = getRepo();
-            const symbols = getSymbols();
-            const btn = document.getElementById('syncBtn');
+            var token = getToken();
+            var repo = getRepo();
+            var symbols = getSymbols();
+            var btn = document.getElementById('syncBtn');
 
             if (!token) {
                 showToast('请先在设置中填写 GitHub Token', 'error');
@@ -475,17 +579,17 @@
                 return;
             }
 
-            const configContent = 'SYMBOLS = ' + JSON.stringify(symbols) + '\n';
+            var configContent = 'SYMBOLS = ' + JSON.stringify(symbols) + '\n';
             btn.textContent = '⏳ 同步中...';
             btn.classList.add('loading');
 
             try {
-                const fileRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
+                var fileRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
                     headers: { 'Authorization': 'token ' + token }
                 });
-                const fileData = await fileRes.json();
+                var fileData = await fileRes.json();
 
-                const updateRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
+                var updateRes = await fetch('https://api.github.com/repos/' + repo + '/contents/config.py', {
                     method: 'PUT',
                     headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -496,7 +600,7 @@
                 });
                 if (!updateRes.ok) throw new Error('更新 config.py 失败');
 
-                const wfRes = await fetch('https://api.github.com/repos/' + repo + '/actions/workflows/daily_run.yml/dispatches', {
+                var wfRes = await fetch('https://api.github.com/repos/' + repo + '/actions/workflows/daily_run.yml/dispatches', {
                     method: 'POST',
                     headers: { 'Authorization': 'token ' + token, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ref: 'main' })
@@ -514,21 +618,22 @@
         }
 
         // ===== 初始化 =====
-        window.addEventListener('DOMContentLoaded', () => {
-            const saved = getToken();
+        window.addEventListener('DOMContentLoaded', function() {
+            var saved = getToken();
             if (saved) document.getElementById('tokenInput').value = saved;
             renderMonitorList();
-            document.getElementById('symbolInput').addEventListener('keydown', e => {
+            renderHistory();
+            document.getElementById('symbolInput').addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') { e.preventDefault(); addSymbols(); }
             });
         });
 
         // ===== Toast =====
         function showToast(msg, type) {
-            const t = document.getElementById('toast');
+            var t = document.getElementById('toast');
             t.textContent = msg;
             t.className = 'toast toast-' + type + ' show';
-            setTimeout(() => t.classList.remove('show'), 3000);
+            setTimeout(function() { t.classList.remove('show'); }, 3000);
         }
     </script>
 </body>
