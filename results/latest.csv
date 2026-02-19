@@ -1,0 +1,2 @@
+ticker,name,sector,industry,stock_types_str,price,total_score,score_valuation,score_profitability,score_cashflow,score_safety,pe,forward_pe,pb,roe,gross_margin,profit_margin,debt_equity,revenue_growth,dividend_yield,beta,market_cap
+ARE,Alexandria Real Estate Equities,Real Estate,REIT - Office,🔄 周期股 | ⚠️ 困境股,52.94,30,10,10,0,10,,-661.75,0.58359885,-0.05856,0.69418997,-0.47384998,66.615,-0.052,8.64,1.324,9174520832
