@@ -1,0 +1,40 @@
+name: 📊 Fundamental Screener
+
+on:
+  schedule:
+    - cron: '0 22 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      tickers:
+        description: '自定义股票列表（逗号分隔）'
+        required: false
+        default: ''
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+      - name: Run screener
+        env:
+          CUSTOM_TICKERS: ${{ github.event.inputs.tickers }}
+        run: python fundamental_screener_v2.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screening-result-${{ github.run_number }}
+          path: results/
+          retention-days: 30
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add results/
+          git diff --staged --quiet || git commit -m "📊 Screener $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
