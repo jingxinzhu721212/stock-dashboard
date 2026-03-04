@@ -1,6 +1,6 @@
 # 📊 基本面筛选结果
 
-更新时间：2026-03-03 22:33 UTC
+更新时间：2026-03-04 22:35 UTC
 
 | # | 代码 | 名称 | 总分 | 类型 | 评级 |
 |---|------|------|------|------|------|
@@ -13,8 +13,8 @@
 | 7 | MSFT | Microsoft Corporatio | 65.0 | 🚀 成长股 | 🏰 护城河股 | 🏦 股息股 | ⭐⭐  值得关注 |
 | 8 | BRK-B | Berkshire Hathaway I | 63.0 | 💰 价值股 | ⭐   一般 |
 | 9 | ABT | Abbott Laboratories | 60.0 | 🏦 股息股 | 🛡️ 防御股 | ⭐   一般 |
-| 10 | AMZN | Amazon.com, Inc. | 58.0 | 🏰 护城河股 | 🔄 周期股 | ⭐   一般 |
-| 11 | UNH | UnitedHealth Group I | 58.0 | 🏦 股息股 | 🛡️ 防御股 | ⭐   一般 |
+| 10 | UNH | UnitedHealth Group I | 58.0 | 🏦 股息股 | 🛡️ 防御股 | ⭐   一般 |
+| 11 | AMZN | Amazon.com, Inc. | 53.0 | 🏰 护城河股 | 🔄 周期股 | ⭐   一般 |
 | 12 | KO | Coca-Cola Company (T | 53.0 | 🏰 护城河股 | 🏦 股息股 | 🛡️ 防御股 | ⭐   一般 |
 | 13 | AAPL | Apple Inc. | 52.0 | 🚀 成长股 | 🏰 护城河股 | 🏦 股息股 | ⭐   一般 |
 | 14 | WMT | Walmart Inc. | 45.0 | 🏦 股息股 | 🛡️ 防御股 |      偏弱 |
